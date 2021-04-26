@@ -105,6 +105,7 @@
 ;; recursively calls bubble-sort until the measure function reaches 0
 ;; the number of call is equal to the size of the input list
 (definec bubble-sort-r (ls :lor n :nat) :lor
+  :ic (<= n (len2 ls))
   (declare (xargs :measure (nfix n)))
   (if (zp n)
       ls
@@ -122,7 +123,7 @@
     (and (<= (first ls) (second ls)) (sorted (cdr ls)))))
 
 ;; proves the inductive case to allow the next proof to pass
-(defthm permp-ind
+(defthm permp-bubble-sort-ind
   (implies (lorp x)
            (permp (cdr x) (del2 (car x) (bubble-sort x)))))
 
@@ -133,7 +134,7 @@
 
 ;; asserts that our bubble sort works correctly
 (skip-proofs
- (defthm bubble-r-sorted
+ (defthm bubble-sort-r-sorted
    (implies (lorp x)
             (sorted (bubble-sort-r x (len2 x))))))
 
@@ -155,17 +156,17 @@
             (permp y z))))
 
 ;; proves that the result of bubble-sort-r is a permutation of its input
-(defthm bubble-sort-r-perm
-  (implies (and (lorp x) (natp n))
+(defthm permp-bubble-sort-r
+  (implies (and (lorp x) (natp n) (<= n (len2 x)))
            (permp x (bubble-sort-r x n))))
 
 ;; proves that if x and y are permutations, boths sorted lists are also permutations
-(defthm bubble-permp
+(defthm permp-bubble
   (implies (and (lorp x) (lorp y) (permp x y))
            (permp (bubble x) (bubble y))))
 
 ;; proves that given x and y are permutations, running bubble on each list produces
 ;; lists that are both sorted and permutations.
-(defthm final
+(defthm bubble-sort-equal
   (implies (and (lorp x) (lorp y) (permp x y))
            (and (sorted (bubble x)) (sorted (bubble y)) (permp (bubble x) (bubble y)))))#|ACL2s-ToDo-Line|#

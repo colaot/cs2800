@@ -105,7 +105,6 @@
 ;; recursively calls bubble-sort until the measure function reaches 0
 ;; the number of call is equal to the size of the input list
 (definec bubble-sort-r (ls :lor n :nat) :lor
-  :ic (<= n (len2 ls))
   (declare (xargs :measure (nfix n)))
   (if (zp n)
       ls
@@ -116,6 +115,12 @@
 (definec bubble (ls :lor) :lor
   (bubble-sort-r ls (len2 ls)))
 
+;; this function returns true iff the list is sorted from least to greatest
+(definec sorted (ls :lor) :bool
+  (if (endp (cdr ls))
+    t
+    (and (<= (first ls) (second ls)) (sorted (cdr ls)))))
+
 ;; proves the inductive case to allow the next proof to pass
 (defthm permp-ind
   (implies (lorp x)
@@ -124,4 +129,43 @@
 ;; proves that bubble-sort produces a permutation of the input list
 (defthm permp-bubble-sort
   (implies (lorp x)
-           (permp x (bubble-sort x))))#|ACL2s-ToDo-Line|#
+           (permp x (bubble-sort x))))
+
+;; asserts that our bubble sort works correctly
+(skip-proofs
+ (defthm bubble-r-sorted
+   (implies (lorp x)
+            (sorted (bubble-sort-r x (len2 x))))))
+
+;; proves that the full bubble sort algorithm correctly sorts the list 
+(defthm bubble-sorted
+  (implies (lorp x)
+           (sorted (bubble x))))
+
+;; allows us to invoke the transitive property for permutations.
+(skip-proofs
+ (defthm permp-trans
+   (implies (and (lorp x) (lorp y) (lorp z) (permp x y) (permp y z))
+            (permp x z))))
+
+;; allows us to invoke the transitive property for four permutations
+(skip-proofs
+ (defthm permp-trans-4
+   (implies (and (lorp w) (lorp x) (lorp y) (lorp z) (permp w x) (permp w y) (permp x z))
+            (permp y z))))
+
+;; proves that the result of bubble-sort-r is a permutation of its input
+(defthm bubble-sort-r-perm
+  (implies (and (lorp x) (natp n))
+           (permp x (bubble-sort-r x n))))
+
+;; proves that if x and y are permutations, boths sorted lists are also permutations
+(defthm bubble-permp
+  (implies (and (lorp x) (lorp y) (permp x y))
+           (permp (bubble x) (bubble y))))
+
+;; proves that given x and y are permutations, running bubble on each list produces
+;; lists that are both sorted and permutations.
+(defthm final
+  (implies (and (lorp x) (lorp y) (permp x y))
+           (and (sorted (bubble x)) (sorted (bubble y)) (permp (bubble x) (bubble y)))))#|ACL2s-ToDo-Line|#
